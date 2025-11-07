@@ -19,6 +19,11 @@ createDefaultAdmin();
 app.use(cors());
 app.use(express.json());
 
+// Add a root route handler
+app.get('/', (req, res) => {
+  res.json({ message: 'CRM Backend API is running' });
+});
+
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/stats', statsrRouter);
