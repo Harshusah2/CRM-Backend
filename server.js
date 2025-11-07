@@ -19,7 +19,6 @@ const allowedOrigins = [
 // CORS middleware: respond to preflight even if DB not connected
 app.use(cors({
   origin: (origin, callback) => {
-    // allow requests with no origin (curl, server-side)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error('CORS: Origin not allowed'));
@@ -30,7 +29,7 @@ app.use(cors({
 }));
 
 // Ensure preflight requests are handled
-app.options('*', cors());
+app.options('/*', cors());
 
 // Body parser
 app.use(express.json());
