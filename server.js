@@ -19,10 +19,15 @@ createDefaultAdmin();
 app.use(cors({
     origin: [
         'http://localhost:5173',  // Local frontend
-        'https://crm-frontend-nine-rho.vercel.app/', // Deployed frontend
+        'https://crm-frontend-nine-rho.vercel.app', // Your actual frontend URL
+        'https://crm-frontend-jet-kappa.vercel.app'  // Your alternative frontend URL
     ],
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
+app.options('*', cors()); // Enable preflight for all routes
+
 app.use(express.json());
 
 // Add a root route handler
