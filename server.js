@@ -16,7 +16,13 @@ connectDB();
 createDefaultAdmin();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: [
+        'http://localhost:5173',  // Local frontend
+        'https://crm-frontend-jet-kappa.vercel.app', // Deployed frontend
+    ],
+    credentials: true
+}));
 app.use(express.json());
 
 // Add a root route handler
