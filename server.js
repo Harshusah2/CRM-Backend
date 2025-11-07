@@ -10,25 +10,45 @@ import staffRoutes from './src/routes/StaffRoutes.js';
 
 const app=express();
 
-// Connect to MongoDB
-connectDB();
-
-createDefaultAdmin();
-
 // Middleware
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://crm-frontend-nine-rho.vercel.app',
+  'https://crm-frontend-jet-kappa.vercel.app'
+];
+
 app.use(cors({
-    origin: [
-        'http://localhost:5173',  // Local frontend
-        'https://crm-frontend-nine-rho.vercel.app', // Your actual frontend URL
-        'https://crm-frontend-jet-kappa.vercel.app'  // Your alternative frontend URL
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+  origin: (origin, callback) => {
+    // allow non-browser (Postman, server-to-server) requests with no origin
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.options('*', cors()); // Enable preflight for all routes
 
 app.use(express.json());
+
+(async () => {
+  try {
+    if (!process.env.MONGO_URI) {
+      console.warn('MONGO_URI not set. Skipping DB connect (deployment may be misconfigured).');
+    } else {
+      await connectDB();
+      console.log('MongoDB connected successfully');
+      try {
+        await createDefaultAdmin();
+      } catch (err) {
+        console.warn('createDefaultAdmin failed:', err.message || err);
+      }
+    }
+  } catch (err) {
+    console.error('DB initialization error (caught):', err);
+  }
+})();
 
 // Add a root route handler
 app.get('/', (req, res) => {
@@ -43,8 +63,16 @@ app.use('/api/staffs', staffRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error('Unhandled error:', err && (err.stack || err));
     res.status(500).json({ ststus: 'error', message: 'Internal Server Error' });
+});
+
+// global unhandled exception logging
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
 });
 
 const PORT = process.env.PORT || 5000;
