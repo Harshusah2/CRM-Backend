@@ -19,7 +19,7 @@ createDefaultAdmin();
 app.use(cors({
     origin: [
         'http://localhost:5173',  // Local frontend
-        'https://crm-frontend-jet-kappa.vercel.app', // Deployed frontend
+        'https://crm-frontend-nine-rho.vercel.app/', // Deployed frontend
     ],
     credentials: true
 }));
