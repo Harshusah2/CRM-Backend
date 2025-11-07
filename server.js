@@ -21,12 +21,30 @@ app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('CORS: Origin not allowed'));
+    return callback(null, false);
   },
   credentials: true,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization']
 }));
+
+// Add a lightweight OPTIONS responder (no path pattern) to handle preflight
+app.use((req, res, next) => {
+  if (req.method !== 'OPTIONS') return next();
+
+  const origin = req.headers.origin;
+  if (!origin || allowedOrigins.includes(origin)) {
+    // mirror requested headers or use a safe default
+    const reqHeaders = req.headers['access-control-request-headers'] || 'Content-Type,Authorization';
+    res.setHeader('Access-Control-Allow-Origin', origin || '');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', reqHeaders);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    return res.sendStatus(204);
+  }
+
+  return res.sendStatus(403);
+});
 
 // Body parser
 app.use(express.json());
